@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sonoro · Panel docente</title>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEEAFF;--paper:#fff;--ink:#1F1B4D;--line:#1F1B4D;--pink:#FF5C8A;--sun:#FFC93C;--mint:#2ED3A5;--sky:#3DA5FF;--vio:#6B4DE6;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light dark}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17143F;--paper:#26225C;--ink:#EDE9FF;--line:#0C0A2A}}
+:root[data-theme="dark"]{--bg:#17143F;--paper:#26225C;--ink:#EDE9FF;--line:#0C0A2A}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Nunito,system-ui,sans-serif;font-weight:600}
+h1,h2,h3,.dp{font-family:'Lilita One',Nunito,sans-serif;font-weight:400;margin:0}
+button{font:inherit;color:inherit;cursor:pointer}:focus-visible{outline:4px solid var(--sky);outline-offset:2px}
+#app{max-width:960px;margin:0 auto;padding:14px}
+.card{background:var(--paper);border:3px solid var(--line);border-radius:16px;box-shadow:0 4px 0 var(--line);padding:14px;margin-bottom:14px}
+.btn{font-family:'Lilita One',sans-serif;font-size:1rem;background:var(--sun);color:#1F1B4D;border:3px solid var(--line);border-radius:12px;padding:8px 14px;box-shadow:0 3px 0 var(--line)}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}.btn.mt{background:var(--mint)}.btn.pk{background:var(--pink)}.btn.gh{background:var(--paper);color:var(--ink)}.btn.sm{font-size:.85rem;padding:5px 10px}
+input,select,textarea{font:inherit;width:100%;padding:10px;border:3px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);margin:4px 0 10px}textarea{font:12px ui-monospace,monospace}
+label{font-weight:800;font-size:.9rem}.err{color:#D6264F;font-weight:800;min-height:1.2em;margin:0 0 8px}small,.mut{opacity:.75;font-weight:700}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.top h1{flex:1;font-size:1.6rem;min-width:140px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto}.tabs button{font-family:'Lilita One';padding:8px 14px;border:3px solid var(--line);border-radius:12px;background:var(--paper);white-space:nowrap}.tabs button[aria-current=page]{background:var(--vio);color:#fff}
+.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:14px}.kp .card{margin:0;text-align:center}.kp b{display:block;font:400 1.9rem 'Lilita One'}.kp span{font-size:.8rem;font-weight:800;opacity:.8}
+.bar{height:14px;border:3px solid var(--line);border-radius:99px;background:var(--bg);overflow:hidden;flex:1}.bar i{display:block;height:100%}
+.br{display:grid;grid-template-columns:minmax(90px,150px) 1fr 52px;gap:8px;align-items:center;margin:7px 0}.br b{text-align:right}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:3px solid var(--line);border-radius:14px;background:var(--paper);margin-bottom:10px;width:100%;text-align:left}
+.row .n{flex:1;min-width:0}.row .n b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font:400 .85rem 'Lilita One';background:var(--sun);color:#1F1B4D;border:2px solid var(--line);border-radius:99px;padding:2px 10px;white-space:nowrap}.pill.g{background:var(--mint)}.pill.r{background:var(--pink);color:#fff}
+.sw{width:56px;height:30px;border-radius:99px;border:3px solid var(--line);background:#c9c4e8;position:relative;flex:none;padding:0}.sw::after{content:'';position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid var(--line);transition:left .15s}.sw[aria-checked=true]{background:var(--mint)}.sw[aria-checked=true]::after{left:28px}
+.md{position:fixed;inset:0;z-index:70;background:rgba(15,12,50,.65);display:grid;place-items:center;padding:16px}.md .card{max-width:480px;width:100%;max-height:90vh;overflow:auto;margin:0}
+.pl{display:flex;gap:8px;flex-wrap:wrap}.chip{display:inline-block;border:2px solid var(--line);border-radius:99px;padding:2px 10px;margin:3px;background:var(--bg);font-weight:800;font-size:.85rem}
+.rd{display:flex;gap:8px;align-items:center;padding:4px 0}.rd .bar{max-width:120px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:99px;font-weight:800;z-index:90;opacity:0;transition:opacity .3s;pointer-events:none}#toast.on{opacity:1}
+.auth{max-width:400px;margin:8vh auto 0}
+</style></head><body><div id="app"></div><div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hash=s=>{let x=5381;for(const c of s)x=(x*33)^c.charCodeAt(0);return String(x>>>0)};
+const GM={ritmo:['Ritmo','Ritmo'],cambio:['¿Qué cambió?','Sonido'],ances:['Instrumentos ancestrales','Precolombina'],orig:['Línea del tiempo','Origen']};
+const AREAS=['Sonido','Ritmo','Origen','Precolombina'];
+const TP=[['t1','¿Qué es la música?',6],['t2','Escribir el ritmo',6],['t3','Propiedades del sonido',6],['t4','Dinámica y velocidad',6],['t5','Origen de la música',4],['t6','El huayno',5]];
+const CH=['Bip','Teddy','Mimi','Spike','Capitán Rulo','Merlo','Sombra','Lila','Zuki','Rex','Brisa','Sir Forte'];
+const thr=n=>Math.round(1000*(Math.pow(1.47,n)-1)/0.47/10)*10;
+const lvl=p=>{let l=1;while(l<10&&p>=thr(l))l++;return l};
+const total=u=>Object.values(u.points||{}).reduce((a,b)=>a+b,0);
+const area=(u,a)=>Object.entries(GM).filter(([,g])=>g[1]===a).reduce((s,[id])=>s+((u.points||{})[id]||0),0);
+const blank=()=>({deleted:[],blanks:{},settings:null});
+function load(){try{const r=localStorage.getItem('sonoro_doc');if(r){const d=JSON.parse(r);d.pend=d.pend||blank();d.pend.blanks=d.pend.blanks||{};delete d.pend.resets;return d}}catch(e){}return{pw:null,snap:null,pend:blank()}}
+let D=load();function save(){try{localStorage.setItem('sonoro_doc',JSON.stringify(D))}catch(e){}}
+let unlocked=false,tab='res',sel=null,q='',srt='pts';
+function toast(t){const e=$('#toast');e.textContent=t;e.className='on';setTimeout(()=>e.className='',2200)}
+const users=()=>D.snap?Object.entries(D.snap.users).filter(([k])=>!D.pend.deleted.includes(k)).map(([k,u])=>({k,...u,T:total(u),L:lvl(total(u))})):[];
+const cfg=()=>D.pend.settings||(D.snap&&D.snap.settings)||{allowSignup:true,topics:{}};
+const pending=()=>D.pend.deleted.length+Object.keys(D.pend.blanks).length+(D.pend.settings?1:0);
+const bar=(v,m,c)=>`<div class="bar"><i style="width:${m?Math.min(100,v/m*100):0}%;background:${c}"></i></div>`;
+function modal(h){const m=document.createElement('div');m.className='md';m.id='mdl';m.onclick=e=>{if(e.target===m)m.remove()};m.innerHTML=`<div class="card" role="dialog">${h}</div>`;document.body.appendChild(m)}
+const close=()=>{const m=$('#mdl');if(m)m.remove()};
+
+function render(){const a=$('#app');
+if(!D.pw){a.innerHTML=`<form class="card auth" onsubmit="return setup(event)"><h1 class="dp">Panel docente</h1><p>Primera vez: creá tu contraseña de docente.</p><label for="p1">Contraseña (6 o más caracteres)</label><input id="p1" type="password" autocomplete="new-password" required><p class="err" id="er"></p><button class="btn">Crear y entrar</button></form>`;return}
+if(!unlocked){a.innerHTML=`<form class="card auth" onsubmit="return login(event)"><h1 class="dp">Panel docente</h1><label for="p1">Contraseña</label><input id="p1" type="password" autocomplete="current-password" required><p class="err" id="er"></p><button class="btn">Entrar</button></form>`;return}
+const n=pending();
+a.innerHTML=`<div class="top"><h1 class="dp">Panel docente</h1><button class="btn sm mt" onclick="loadM()">📥 Cargar datos</button><button class="btn sm ${n?'pk':'gh'}" onclick="exportM()">📤 Cambios${n?' ('+n+')':''}</button><button class="btn sm gh" onclick="unlocked=false;sel=null;render()">🔒</button></div>
+<div class="tabs">${[['res','Resumen'],['al','Alumnos'],['tm','Temas'],['aj','Ajustes']].map(([k,l])=>`<button ${tab===k?'aria-current="page"':''} onclick="tab='${k}';sel=null;render()">${l}</button>`).join('')}</div>${!D.snap&&tab!=='aj'?empty():tab==='res'?resumen():tab==='al'?(sel?detalle():alumnos()):tab==='tm'?temas():ajustes()}`}
+function setup(e){e.preventDefault();const p=$('#p1').value;if(p.length<6)return $('#er').textContent='Necesita 6 caracteres o más.',false;D.pw=hash(p);save();unlocked=true;render();return false}
+function login(e){e.preventDefault();if(hash($('#p1').value)!==D.pw)return $('#er').textContent='Contraseña incorrecta.',false;unlocked=true;render();return false}
+const empty=()=>`<div class="card"><h3>Todavía no hay datos</h3><p>Traé los datos de la plataforma con <b>Cargar datos</b>, o mirá cómo se ve el panel con datos de ejemplo.</p><div class="pl"><button class="btn mt" onclick="loadM()">📥 Cargar datos</button><button class="btn gh" onclick="demo()">Ver con datos de ejemplo</button></div></div>`;
+
+function resumen(){const U=users(),N=U.length||1,pts=U.reduce((s,u)=>s+u.T,0),pl=U.reduce((s,u)=>s+Object.values(u.stats||{}).reduce((a,x)=>a+x.plays,0),0),rd=U.reduce((s,u)=>s+Object.values(u.read||{}).filter(r=>r.done).length,0);
+const top=[...U].sort((a,b)=>b.T-a.T).slice(0,5),idle=U.filter(u=>!u.T&&!Object.keys(u.read||{}).length);
+const avg=a=>U.reduce((s,u)=>s+area(u,a),0)/N,mx=Math.max(1,...AREAS.map(avg));
+return `<div class="kp"><div class="card"><b>${U.length}</b><span>Alumnos</span></div><div class="card"><b>${pts}</b><span>Puntos sumados</span></div><div class="card"><b>${pl}</b><span>Partidas terminadas</span></div><div class="card"><b>${rd}</b><span>Lecturas completas</span></div></div>
+<div class="two"><div class="card"><h3>Promedio por área</h3><p class="mut" style="margin:2px 0 6px">¿En qué andan mejor?</p>${AREAS.map((a,i)=>`<div class="br"><span>${a}</span>${bar(avg(a),mx,['var(--sky)','var(--pink)','var(--sun)','var(--mint)'][i])}<b>${Math.round(avg(a))}</b></div>`).join('')}</div>
+<div class="card"><h3>Lectura por tema</h3><p class="mut" style="margin:2px 0 6px">Alumnos que llegaron al final</p>${TP.map(([id,n])=>{const d=U.filter(u=>((u.read||{})[id]||{}).done).length;return `<div class="br"><span>${esc(n)}</span>${bar(d,U.length,'var(--vio)')}<b>${d}/${U.length}</b></div>`}).join('')}</div></div>
+<div class="two"><div class="card"><h3>Top 5</h3>${top.map((u,i)=>`<div class="br" style="grid-template-columns:24px 1fr auto"><b>${i+1}</b><span>${esc(u.name)}</span><span class="pill">${u.T} pts</span></div>`).join('')||'<p class="mut">Sin alumnos.</p>'}</div>
+<div class="card"><h3>Sin actividad</h3>${idle.map(u=>`<span class="chip">${esc(u.name)}</span>`).join('')||'<p class="mut">Todos tienen actividad.</p>'}</div></div>`}
+
+function alumnos(){let U=users().filter(u=>u.name.toLowerCase().includes(q.toLowerCase()));U.sort((a,b)=>srt==='nom'?a.name.localeCompare(b.name):srt==='niv'?b.L-a.L||b.T-a.T:b.T-a.T);
+return `<div class="two"><div><label for="q">Buscar</label><input id="q" value="${esc(q)}" oninput="q=this.value;lst()" placeholder="Nombre de usuario"></div><div><label for="so">Ordenar por</label><select id="so" onchange="srt=this.value;render()"><option value="pts" ${srt==='pts'?'selected':''}>Puntos</option><option value="niv" ${srt==='niv'?'selected':''}>Nivel</option><option value="nom" ${srt==='nom'?'selected':''}>Nombre</option></select></div></div><div id="lst">${rows(U)}</div>`}
+const rows=U=>U.map(u=>{const rd=Object.values(u.read||{}).filter(r=>r.done).length;return `<button class="row" onclick="sel='${esc(u.k).replace(/'/g,'')}';render()"><div class="n"><b>${esc(u.name)}</b><small>${esc(CH[u.avatar]||'—')} · lee ${rd}/${TP.length} temas${D.pend.blanks[u.k]?' · blanqueo pendiente':u.pw===null?' · blanqueado':''}</small></div><span class="pill g">Nv ${u.L}</span><span class="pill">${u.T} pts</span></button>`}).join('')||'<p class="mut">No hay alumnos que coincidan.</p>';
+function lst(){let U=users().filter(u=>u.name.toLowerCase().includes(q.toLowerCase()));U.sort((a,b)=>srt==='nom'?a.name.localeCompare(b.name):srt==='niv'?b.L-a.L||b.T-a.T:b.T-a.T);$('#lst').innerHTML=rows(U)}
+function detalle(){const u=users().find(x=>x.k===sel);if(!u){sel=null;return alumnos()}const mx=Math.max(1,...Object.keys(GM).map(id=>(u.points||{})[id]||0)),am=Math.max(1,...AREAS.map(a=>area(u,a)));
+const st=Object.values(u.stats||{}),pr=Object.entries(u.prog||{});
+return `<button class="btn sm gh" onclick="sel=null;render()">‹ Volver</button><div class="card" style="margin-top:12px"><div class="top" style="margin:0"><h2 class="dp" style="flex:1">${esc(u.name)}</h2><span class="pill g">Nivel ${u.L}</span><span class="pill">${u.T} pts</span></div><p class="mut" style="margin:6px 0 0">Personaje: ${esc(CH[u.avatar]||'—')} · Partidas: ${st.reduce((a,x)=>a+x.plays,0)} · Mejor partida: ${Math.max(0,...st.map(x=>x.best))}${pr.length?' · En curso: '+pr.map(([id,p])=>esc((GM[id]||[id])[0])+' nivel '+(p.level+1)).join(', '):''}</p></div>
+<div class="two"><div class="card"><h3>Por juego</h3>${Object.entries(GM).map(([id,g])=>`<div class="br"><span>${esc(g[0])}</span>${bar((u.points||{})[id]||0,mx,'var(--pink)')}<b>${(u.points||{})[id]||0}</b></div>`).join('')}<h3 style="margin-top:14px">Por área</h3>${AREAS.map(a=>`<div class="br"><span>${a}</span>${bar(area(u,a),am,'var(--sky)')}<b>${area(u,a)}</b></div>`).join('')}</div>
+<div class="card"><h3>Teoría</h3>${TP.map(([id,n,t])=>{const r=(u.read||{})[id];const v=r?r.v.length:0;return `<div class="rd"><span style="flex:1">${esc(n)}</span>${bar(v,t,'var(--mint)')}<span class="pill ${r&&r.done?'g':''}">${r&&r.done?'Leída':v?v+'/'+t:'—'}</span></div>`}).join('')}</div></div>
+<div class="card"><h3>Acciones</h3><div class="pl"><button class="btn" onclick="blankM('${esc(u.k).replace(/'/g,'')}')">🔑 Blanquear contraseña</button><button class="btn pk" onclick="delM('${esc(u.k).replace(/'/g,'')}')">🗑️ Eliminar usuario</button></div>${D.pend.blanks[u.k]?`<p class="mut">Blanqueo pendiente de aplicar. <button class="lnk" onclick="blankShow('${esc(u.k).replace(/'/g,'')}')">Ver código y mensaje</button></p>`:u.pw===null?'<p class="mut">Contraseña blanqueada: el alumno tiene que usar su código.</p>':''}</div>`}
+const norm=s=>String(s).toUpperCase().replace(/[^A-Z0-9]/g,'');
+const sha=async s=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');
+function blankM(k){if(D.pend.blanks[k])return blankShow(k);modal(`<h3>Blanquear contraseña</h3><p>Se anula la contraseña actual de <b>${esc(k)}</b> y se genera un código de un solo uso, válido por 48 horas, para que cree una nueva. Podés mandárselo a su mail personal.</p><div class="pl"><button class="btn" onclick="doBlank('${k}')">Generar código</button><button class="btn gh" onclick="close()">Cancelar</button></div>`)}
+async function doBlank(k){const al='ABCDEFGHJKMNPQRSTUVWXYZ23456789',r=crypto.getRandomValues(new Uint8Array(12));const code=[...r].map(x=>al[x%al.length]).join('').replace(/(.{4})(?=.)/g,'$1-');D.pend.blanks[k]={code,h:await sha(k+':'+norm(code)),exp:Date.now()+48*3600*1000};save();render();blankShow(k)}
+function blankShow(k){const b=D.pend.blanks[k],u=D.snap.users[k],f=new Date(b.exp).toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'});
+const msg=`Hola ${u?u.name:k}! Tu docente blanqueó tu contraseña de Sonoro. Para crear una nueva:\n1) Entrá a Sonoro.\n2) Tocá "Tengo un código de blanqueo".\n3) Escribí tu usuario (${k}), este código: ${b.code} y elegí tu contraseña nueva.\nEl código sirve una sola vez y vence el ${f}.`;
+modal(`<h3>Código de blanqueo</h3><p class="mut">Mensaje listo para enviar al mail personal del alumno:</p><textarea id="ex" rows="7" readonly onclick="this.select()">${esc(msg)}</textarea><div class="pl"><button class="btn" onclick="cpy()">Copiar mensaje</button><button class="btn gh" onclick="close()">Cerrar</button></div><p class="mut" style="margin-top:10px">Falta aplicar los cambios en la plataforma (📤 Cambios) para que el código funcione. Cuando conectemos la base de datos, esto pasa a ser un enlace directo y seguro con vencimiento.</p>`)}
+function delM(k){modal(`<h3>Eliminar usuario</h3><p>Se va a borrar a <b>${esc(k)}</b> con todos sus puntos y progreso. No se puede deshacer.</p><div class="pl"><button class="btn pk" onclick="doDel('${k}')">Eliminar</button><button class="btn gh" onclick="close()">Cancelar</button></div>`)}
+function doDel(k){D.pend.deleted.push(k);delete D.pend.blanks[k];save();close();sel=null;render();toast('Marcado para eliminar. Falta aplicar los cambios')}
+
+function setTopic(id,v){const c=cfg();D.pend.settings={...c,topics:{...(c.topics||{}),[id]:v}};save();render()}
+function allTopics(v){const c=cfg(),t={};TP.forEach(([id])=>t[id]=v);D.pend.settings={...c,topics:t};save();render()}
+const sw=(on,js,l)=>`<button class="sw" role="switch" aria-checked="${on}" aria-label="${l}" onclick="${js}"></button>`;
+function temas(){const U=users(),c=cfg();return `<div class="pl" style="margin-bottom:12px"><button class="btn sm mt" onclick="allTopics(true)">Habilitar todos</button><button class="btn sm gh" onclick="allTopics(false)">Bloquear todos</button></div>${TP.map(([id,n,t])=>{const on=(c.topics||{})[id]!==false,d=U.filter(u=>((u.read||{})[id]||{}).done).length,s=U.filter(u=>(u.read||{})[id]&&!u.read[id].done).length;return `<div class="row">${sw(on,`setTopic('${id}',${!on})`,n)}<div class="n"><b>${esc(n)}</b><small>${t} diapositivas · ${d} la terminaron · ${s} en curso</small></div><span class="pill ${on?'g':'r'}">${on?'Habilitado':'Bloqueado'}</span></div>`}).join('')}<p class="mut">Los alumnos ven los temas bloqueados con un candado, hasta que los habilites.</p>`}
+
+function ajustes(){const c=cfg(),on=c.allowSignup!==false;return `<div class="row">${sw(on,`setSignup(${!on})`,'Permitir usuarios nuevos')}<div class="n"><b>Permitir usuarios nuevos</b><small>Si lo apagás, nadie puede crear cuenta.</small></div><span class="pill ${on?'g':'r'}">${on?'Sí':'No'}</span></div>
+<div class="card"><h3>Mi contraseña de docente</h3><label for="cp">Contraseña nueva (6 o más)</label><input id="cp" type="password" autocomplete="new-password"><p class="err" id="er"></p><button class="btn" onclick="chPw()">Cambiar</button></div>
+<div class="card"><h3>Datos</h3><div class="pl"><button class="btn gh" onclick="demo()">Cargar datos de ejemplo</button><button class="btn pk" onclick="clr()">Borrar datos de este panel</button></div><p class="mut">Esto solo afecta a este panel, no a la plataforma.</p></div>`}
+function setSignup(v){D.pend.settings={...cfg(),allowSignup:v};save();render()}
+function chPw(){const p=$('#cp').value;if(p.length<6)return $('#er').textContent='Necesita 6 caracteres o más.';D.pw=hash(p);save();toast('Contraseña cambiada');render()}
+function clr(){modal(`<h3>Borrar datos del panel</h3><p>Se borran los datos cargados y los cambios pendientes de este panel. La plataforma no se toca.</p><div class="pl"><button class="btn pk" onclick="D.snap=null;D.pend=blank();save();close();render()">Borrar</button><button class="btn gh" onclick="close()">Cancelar</button></div>`)}
+
+/* --- puente temporal con la plataforma (hasta conectar la base de datos) --- */
+function loadM(){modal(`<h3>Cargar datos de la plataforma</h3><p class="mut">En la plataforma: pantalla de ingreso → <b>Herramientas docente</b> → <b>Copiar datos</b>. Pegá acá:</p><textarea id="dt" rows="6" placeholder="Pegá los datos"></textarea><p class="err" id="er"></p><div class="pl"><button class="btn mt" onclick="doLoad()">Cargar</button><button class="btn gh" onclick="close()">Cancelar</button></div>`)}
+function doLoad(){try{const d=JSON.parse($('#dt').value.trim());if(d.sonoro!=='data'||!d.users)throw 0;D.snap={users:d.users,settings:{allowSignup:true,topics:{},...(d.settings||{})}};D.pend=blank();save();close();render();toast('Datos cargados: '+Object.keys(d.users).length+' alumnos')}catch(e){$('#er').textContent='Esos datos no son válidos. Copialos de nuevo desde la plataforma.'}}
+function patch(){return JSON.stringify({sonoro:'patch',deleted:D.pend.deleted,blanks:Object.fromEntries(Object.entries(D.pend.blanks).map(([k,b])=>[k,{h:b.h,exp:b.exp}])),settings:D.pend.settings||undefined})}
+function exportM(){if(!pending())return toast('No hay cambios pendientes');modal(`<h3>Aplicar cambios en la plataforma</h3><p class="mut">1) Copiá el texto. 2) En la plataforma: ingreso → <b>Herramientas docente</b> → pegalo en <b>Cambios</b> → <b>Aplicar cambios</b>. 3) Volvé y tocá “Ya los apliqué”.</p><textarea id="ex" rows="5" readonly onclick="this.select()">${esc(patch())}</textarea><div class="pl"><button class="btn" onclick="cpy()">Copiar</button><button class="btn mt" onclick="applied()">Ya los apliqué</button><button class="btn gh" onclick="close()">Cerrar</button></div>`)}
+function cpy(){const t=$('#ex');t.select();try{navigator.clipboard.writeText(t.value).then(()=>toast('Copiado'),()=>{document.execCommand('copy');toast('Copiado')})}catch(e){try{document.execCommand('copy');toast('Copiado')}catch(x){}}}
+function applied(){D.pend.deleted.forEach(k=>delete D.snap.users[k]);Object.entries(D.pend.blanks).forEach(([k,b])=>{if(D.snap.users[k]){D.snap.users[k].pw=null;D.snap.users[k].reset={h:b.h,exp:b.exp}}});if(D.pend.settings)D.snap.settings=D.pend.settings;D.pend=blank();save();close();render();toast('Cambios marcados como aplicados')}
+function demo(){const N=['luna23','tomi_r','sofi.m','nico10','maru','joaco','vale_k','benja','cami','fran','lola','teo','agus','mica'],r=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),us={};
+N.forEach((n,i)=>{const act=i<12,pts={};if(act){pts.ritmo=r(0,1400);pts.cambio=r(0,1100);if(Math.random()<.4)pts.ances=r(0,300)}const read={};TP.forEach(([id,,t],j)=>{if(act&&j<4&&Math.random()<.8){const d=Math.random()<.65;read[id]={v:Array.from({length:d?t:r(1,t-1)},(_,k)=>k),done:d}}});
+us[n]={name:n,pw:'0',avatar:i%12,points:pts,read,stats:act?{ritmo:{plays:r(1,8),best:r(200,420)}}:{},prog:act&&Math.random()<.3?{ritmo:{level:r(1,3),score:r(50,200),run:0}}:{},created:Date.now()}});
+D.snap={users:us,settings:{allowSignup:true,topics:{t1:true,t2:true,t3:true,t4:false,t5:false,t6:false}}};D.pend=blank();save();render();toast('Datos de ejemplo cargados')}
+render();
+</script></body></html>
