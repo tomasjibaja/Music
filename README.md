@@ -1,61 +1,55 @@
 # Sonoro · Música 1° año
 
-Plataforma de juegos y teoría para primer año de secundaria.
-Sitio estático (sin build): se publica tal cual en Vercel.
+Plataforma de juegos y teoría para primer año de secundaria. Frontend estático + API en Vercel + base MongoDB Atlas.
 
 ## Estructura
 
 ```
-index.html            Plataforma de los alumnos (juegos, teoría, perfil, ranking)
-docente/index.html    Panel docente (acceso por contraseña) -> /docente
-vercel.json           Configuración de Vercel (URLs limpias, cabeceras, noindex del panel)
-robots.txt            Evita que se indexe /docente
-games-src/            Código fuente de los juegos (referencia para futuras versiones)
-  ritmo/              Proyecto de Ritmo (con tests: node --test test/*.test.js ; build: node build.js)
-  propiedades/        ¿Qué cambió? (HTML único)
+index.html              Plataforma de los alumnos
+docente/index.html      Panel docente  ->  /docente
+api/[...path].js        API (una sola función serverless)
+api/_lib/               Base de datos, autenticación y datos fijos
+test/                   Pruebas (no necesitan MongoDB ni internet): npm test
+games-src/              Código fuente de los juegos (referencia)
+vercel.json  robots.txt  package.json  .env.example
 ```
 
-Los juegos ya están incluidos dentro de `index.html` (cada uno corre en su propio marco).
-Si se actualiza un juego, hay que volver a incrustarlo en `index.html`.
+## Puesta en marcha
+
+1. **MongoDB Atlas**: cluster gratuito (M0), usuario de base de datos, y en *Network Access* permitir `0.0.0.0/0`.
+   Copiar la cadena de conexión ("Drivers").
+2. **GitHub**: subir esta carpeta a un repositorio.
+3. **Vercel**: *Add New → Project* → importar el repo. Framework: `Other`. Sin comando de build.
+4. **Variables de entorno** (Vercel → Settings → Environment Variables), y luego *Redeploy*:
+
+| Nombre | Valor |
+|---|---|
+| `MONGODB_URI` | cadena de conexión de Atlas (con usuario y clave reales) |
+| `JWT_SECRET` | frase larga y aleatoria (32+ caracteres) |
+| `TEACHER_PASSWORD` | contraseña del docente |
+| `MONGODB_DB` | (opcional) nombre de la base, por defecto `sonoro` |
+| `PUBLIC_URL` | (opcional) por ejemplo `https://sonoro.vercel.app`; si no, se usa la dirección del pedido |
+
+5. Entrar a `/docente`, iniciar sesión y **habilitar los temas** (empiezan bloqueados).
+
+## Cómo funciona
+
+- Las contraseñas de los alumnos se guardan con `scrypt` (nunca en texto plano). Las sesiones son tokens firmados.
+- **Blanqueo**: el docente genera un enlace de un solo uso que vence a las **24 horas**. Al blanquear, la contraseña vieja y las sesiones abiertas dejan de servir.
+  El alumno abre el enlace y elige su contraseña nueva. Solo se guarda la huella del enlace, así que el panel lo muestra una única vez.
+- Intentos de ingreso limitados (8 fallos → bloqueo de 15 minutos).
+- Los puntos los guarda el servidor. Los juegos corren en el navegador, así que el servidor aplica topes por nivel, un tiempo mínimo entre niveles
+  y un bonus fijo de 50 puntos. Un alumno con conocimientos técnicos podría igualmente intentar manipular sus puntos dentro de esos topes.
 
 ## Probar en local
 
 ```bash
-npx serve .
-# alumnos:  http://localhost:3000
-# docente:  http://localhost:3000/docente
+npm install
+npm test                 # pruebas del servidor y de las pantallas, con base falsa
+npx vercel dev           # con un archivo .env copiado de .env.example
 ```
 
-## Subir a Git
+## Actualizar un juego
 
-```bash
-git init
-git add .
-git commit -m "Sonoro: primera versión"
-git branch -M main
-git remote add origin https://github.com/TU-USUARIO/sonoro.git
-git push -u origin main
-```
-
-## Deploy en Vercel
-
-1. En vercel.com: **Add New → Project** e importá el repositorio.
-2. **Framework Preset:** `Other`. **Build Command:** vacío. **Output Directory:** vacío (la raíz).
-3. **Deploy**. Cada `git push` a `main` vuelve a publicar solo.
-
-Alternativa por consola: `npx vercel` (y `npx vercel --prod` para producción).
-
-## Importante (etapa actual)
-
-- Los datos (usuarios, puntos, progreso) se guardan en el navegador de cada dispositivo (`localStorage`).
-  Cada alumno ve solo lo suyo y el ranking solo incluye usuarios del mismo dispositivo.
-- El panel docente trabaja con el puente de copiar y pegar (Herramientas docente en la plataforma).
-- La contraseña del docente y las de los alumnos usan una codificación simple, apta solo para pruebas.
-  No cargar datos reales de alumnos hasta conectar la base de datos.
-
-## Próxima etapa: MongoDB Atlas
-
-- Agregar funciones serverless en `/api` (usuarios, puntos, progreso, ranking, blanqueo).
-- Guardar contraseñas con hash seguro (bcrypt/argon2) y sesiones con token.
-- El código de blanqueo pasa a ser un enlace de un solo uso con vencimiento.
-- Variables de entorno (en Vercel → Settings → Environment Variables): `MONGODB_URI`, `JWT_SECRET`.
+Los juegos están incrustados en `index.html`. Para cambiar uno, se reemplaza su versión (ver `games-src/`) y se vuelve a incrustar.
+Cada juego avisa a la plataforma con tres mensajes: puntos por nivel, fin de partida y partida a retomar.
