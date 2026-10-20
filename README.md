@@ -32,6 +32,17 @@ vercel.json  robots.txt  package.json  .env.example
 
 5. Entrar a `/docente`, iniciar sesión y **habilitar los temas** (empiezan bloqueados).
 
+## Si algo falla
+
+Abrí `https://TU-SITIO.vercel.app/api/index?r=health`. Muestra qué variables están cargadas y si hay conexión con la base (nunca muestra valores secretos).
+
+- `env` con algún `false`: la variable no está cargada. Revisá el nombre (exacto, en mayúsculas) y que esté tildada para *Production*, y hacé **Redeploy**.
+- `db` con `error`: no se pudo conectar a Atlas.
+  - En `MONGODB_URI` reemplazá `<password>` por la clave real, **sin los signos < >**. Si la clave tiene símbolos (`@ : / ? # %`), codificalos o usá una clave solo con letras y números.
+  - En Atlas → *Network Access* tiene que estar `0.0.0.0/0` (puede tardar un minuto en activarse).
+  - En Atlas → *Database Access*, el usuario necesita permiso de lectura y escritura (*Read and write to any database*).
+- `404` en `/api/index`: la carpeta `api/` no se subió completa (tiene que estar `api/index.js` y `api/_lib/`).
+
 ## Cómo funciona
 
 - Las contraseñas de los alumnos se guardan con `scrypt` (nunca en texto plano). Las sesiones son tokens firmados.

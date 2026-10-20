@@ -38,10 +38,12 @@ function teacher(ctx) {
 const studentToken = (u) => A.sign({ sub: u.username, role: 'student', tv: u.tokVer || 0 }, 30 * DAY);
 const session = (u) => ({ token: studentToken(u), user: pub(u) });
 
+const clean = (m) => String(m || '').replace(/mongodb(\+srv)?:\/\/\S+/gi, '[uri]').slice(0, 220);
 const H = {
   'GET settings': async ({ db }) => getSettings(db),
 
   'POST register': async ({ db, b }) => {
+    A.secret();
     const st = await getSettings(db);
     if (!st.allowSignup) throw fail(403, 'Por ahora no se pueden crear usuarios nuevos.');
     const name = String(b.username || '').trim(), pw = String(b.password || '');
@@ -56,6 +58,7 @@ const H = {
   },
 
   'POST login': async ({ db, b }) => {
+    A.secret();
     const k = String(b.username || '').trim().toLowerCase(), key = 'login:' + k;
     await limit(db, key, 8, 900);
     const u = k && await db.collection('users').findOne({ username: k });
@@ -66,6 +69,7 @@ const H = {
   },
 
   'POST reset': async ({ db, b }) => {
+    A.secret();
     const k = String(b.username || '').trim().toLowerCase(), key = 'reset:' + k, pw = String(b.password || '');
     await limit(db, key, 8, 900);
     if (pw.length < 4 || pw.length > 64) throw fail(400, 'La contraseña necesita 4 caracteres o más.');
@@ -189,9 +193,16 @@ const H = {
 
 function routeOf(req) {
   const url = new URL(req.url, 'http://x');
-  let p = url.pathname.startsWith('/api/') ? url.pathname.slice(5) : '';
-  if (!p || p === '[...path]' || p === '[...path].js') { const q = req.query && req.query.path; p = Array.isArray(q) ? q.join('/') : String(q || ''); }
+  let p = url.searchParams.get('r');
+  if (p === null) p = url.pathname.startsWith('/api/') ? url.pathname.slice(5) : '';
   return p.replace(/^\/+|\/+$/g, '');
+}
+// Diagnóstico: muestra qué variables están cargadas y si hay conexión con la base (nunca muestra valores secretos)
+async function health() {
+  const out = { env: { MONGODB_URI: !!process.env.MONGODB_URI, JWT_SECRET: (process.env.JWT_SECRET || '').length >= 16, TEACHER_PASSWORD: !!process.env.TEACHER_PASSWORD }, node: process.version, db: '' };
+  try { const db = await getDb(); if (db.command) await db.command({ ping: 1 }); out.db = 'ok'; }
+  catch (e) { out.db = 'error: ' + (e && e.name) + ': ' + clean(e && e.message); }
+  return out;
 }
 function bodyOf(req) {
   let b = req.body;
@@ -203,13 +214,17 @@ module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   try {
-    const h = H[req.method + ' ' + routeOf(req)];
+    const route = routeOf(req);
+    if (req.method === 'GET' && route === 'health') return res.status(200).json(await health());
+    const h = H[req.method + ' ' + route];
     if (!h) return res.status(404).json({ error: 'No existe.' });
-    const db = await getDb();
+    let db;
+    try { db = await getDb(); } catch (e) { console.error(e); throw fail(503, 'No se pudo conectar con la base de datos. Avisale al docente.', { diag: 'db' }); }
     return res.status(200).json(await h({ req, res, db, b: bodyOf(req) }));
   } catch (e) {
     if (e && e.http) return res.status(e.http).json({ error: e.message, ...(e.extra || {}) });
     console.error(e);
+    if (e && /^Falta /.test(e.message || '')) return res.status(500).json({ error: 'El servidor no está bien configurado: ' + e.message, diag: 'env' });
     return res.status(500).json({ error: 'Error del servidor. Probá de nuevo en un rato.' });
   }
 };

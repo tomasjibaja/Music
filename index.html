@@ -98,10 +98,10 @@ let ME=null,ST={allowSignup:true,topics:{}},RK=null,BOOT=false,RS={u:'',t:''},TO
 try{TOKEN=localStorage.getItem('sonoro_token')}catch(e){}
 const me=()=>ME;
 async function api(path,method,body){const h={'Content-Type':'application/json'};if(TOKEN)h.Authorization='Bearer '+TOKEN;let r;
-try{r=await fetch('/api/'+path,{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined})}catch(e){throw{error:'Sin conexión. Revisá tu internet y probá de nuevo.'}}
+try{r=await fetch('/api/index?r='+encodeURIComponent(path),{method:method||'GET',headers:h,body:body?JSON.stringify(body):undefined})}catch(e){throw{error:'Sin conexión. Revisá tu internet y probá de nuevo.'}}
 let d={};try{d=await r.json()}catch(e){}
 if(r.status===401&&TOKEN&&path!=='login'&&path!=='reset'){logoutLocal();if(BOOT)render()}
-if(!r.ok)throw{error:d.error||'Algo salió mal.',status:r.status,data:d};return d}
+if(!r.ok)throw{error:d.error||('Error '+r.status+': el servidor no respondió como se esperaba.'),status:r.status,data:d};return d}
 function setSession(r){TOKEN=r.token;try{localStorage.setItem('sonoro_token',r.token)}catch(e){}ME=r.user}
 function logoutLocal(){TOKEN=null;ME=null;try{localStorage.removeItem('sonoro_token')}catch(e){}}
 function logout(){logoutLocal();tab='games';render()}

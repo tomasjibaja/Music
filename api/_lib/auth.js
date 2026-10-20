@@ -43,4 +43,4 @@ const sha = (s) => crypto.createHash('sha256').update(String(s)).digest('hex');
 const sameStr = (a, b) => crypto.timingSafeEqual(crypto.createHash('sha256').update(String(a)).digest(), crypto.createHash('sha256').update(String(b)).digest());
 const newToken = () => crypto.randomBytes(24).toString('base64url');
 
-module.exports = { sign, verify, hashPw, checkPw, sha, sameStr, newToken };
+module.exports = { secret, sign, verify, hashPw, checkPw, sha, sameStr, newToken };

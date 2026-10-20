@@ -3,7 +3,7 @@ const fs = require('fs'), path = require('path'), assert = require('node:assert/
 process.env.JWT_SECRET = 'prueba-prueba-prueba-prueba-1234'; process.env.TEACHER_PASSWORD = 'docente-123';
 const { fakeDb } = require('./fakedb');
 const db = fakeDb(); global.__SONORO_TEST_DB = db;
-const handler = require('../api/[...path].js');
+const handler = require('../api/index.js');
 const els = {};
 const mk = () => ({ value: '', textContent: '', className: '', _h: '', set innerHTML(v) { this._h = v; }, get innerHTML() { return this._h; }, style: {}, select() {}, remove() {}, appendChild() {} });
 const $ = (s) => els[s] || (els[s] = mk());
@@ -17,7 +17,7 @@ global.fetch = async (url, o = {}) => {
 const html = fs.readFileSync(path.join(__dirname, '../docente/index.html'), 'utf8');
 const code = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)][0][1];
 const AF = Object.getPrototypeOf(async function () {}).constructor;
-const call = async (m, p, b) => (await (await fetch('/api/' + p, { method: m, headers: {}, body: b ? JSON.stringify(b) : undefined })).json());
+const call = async (m, p, b) => (await (await fetch('/api/index?r=' + p, { method: m, headers: {}, body: b ? JSON.stringify(b) : undefined })).json());
 (async () => {
   for (const n of ['Ana', 'Beto']) await call('POST', 'register', { username: n, password: '1234', avatar: 2 });
   await new AF('assert', code + `

@@ -6,11 +6,11 @@ process.env.TEACHER_PASSWORD = 'docente-123';
 const { fakeDb } = require('./fakedb');
 const db = fakeDb();
 global.__SONORO_TEST_DB = db;
-const handler = require('../api/[...path].js');
+const handler = require('../api/index.js');
 
 async function call(method, path, body, token) {
   const res = { code: 0, out: null, setHeader() {}, status(c) { this.code = c; return this; }, json(o) { this.out = o; return this; } };
-  await handler({ method, url: '/api/' + path, headers: token ? { authorization: 'Bearer ' + token, host: 'sonoro.test' } : { host: 'sonoro.test' }, body }, res);
+  await handler({ method, url: '/api/index?r=' + path, headers: token ? { authorization: 'Bearer ' + token, host: 'sonoro.test' } : { host: 'sonoro.test' }, body }, res);
   return res;
 }
 const ok = (r, c = 200) => assert.equal(r.code, c, JSON.stringify(r.out));
@@ -95,5 +95,8 @@ const old = (u, g) => { users.find((x) => x.username === u).lv = { [g]: 1 }; }; 
   ok(await call('POST', 'teacher/settings', { allowSignup: false }, T));
   ok(await call('POST', 'register', { username: 'Carla', password: '1234', avatar: 1 }), 403);
   ok(await call('GET', 'nada'), 404);
+  r = await call('GET', 'health'); ok(r); assert.equal(r.out.db, 'ok'); assert.equal(r.out.env.JWT_SECRET, true); assert.ok(!JSON.stringify(r.out).includes('prueba-prueba'));
+  delete process.env.JWT_SECRET; r = await call('POST', 'register', { username: 'Zeta', password: '1234', avatar: 1 }); ok(r, 500); assert.match(r.out.error, /JWT_SECRET/); assert.equal(users.some((x) => x.username === 'zeta'), false);
+  process.env.JWT_SECRET = 'prueba-prueba-prueba-prueba-1234';
   console.log('Todas las pruebas del servidor pasaron');
 })().catch((e) => { console.error('FALLÓ:', e.message); process.exit(1); });
