@@ -30,7 +30,7 @@ vercel.json  robots.txt  package.json  .env.example
 | `MONGODB_DB` | (opcional) nombre de la base, por defecto `sonoro` |
 | `PUBLIC_URL` | (opcional) por ejemplo `https://sonoro.vercel.app`; si no, se usa la dirección del pedido |
 
-5. Entrar a `/docente`, iniciar sesión y **habilitar los temas** (empiezan bloqueados).
+5. Entrar a `/docente`, iniciar sesión y **habilitar los temas y los juegos** (empiezan bloqueados).
 
 ## Si algo falla
 

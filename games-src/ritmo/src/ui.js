@@ -524,7 +524,7 @@ $('listen').addEventListener('click', async () => {
   unlockAudio();
   if (listened || listening || locked || applying || jp || $('play').hidden || rec.count() > 0) return;
   listened = true; listening = true; updateListen();
-  const p = game.state().pattern, beat = 650;
+  const p = game.state().pattern, beat = 715;
   setMsg('Escuchá…', 'hint');
   playPatternSound(p, beat / 1000);
   for (let i = 0; i < p.length; i++) {

@@ -50,6 +50,8 @@ const old = (u, g) => { users.find((x) => x.username === u).lv = { [g]: 1 }; }; 
   r = await call('GET', 'me', null, ana); assert.equal(r.out.user.read.t1.done, true);
 
   // juegos
+  ok(await call('POST', 'progress/level', { game: 'ritmo', pts: 10, next: 1, score: 10 }, ana), 403);
+  r = await call('POST', 'teacher/settings', { games: { ritmo: true, cambio: true, zzz: true } }, T); ok(r); assert.deepEqual(r.out.settings.games, { ritmo: true, cambio: true });
   ok(await call('POST', 'progress/level', { game: 'ritmo', pts: 999, next: 1, score: 10 }, ana), 400);
   ok(await call('POST', 'progress/end', { game: 'ritmo' }, ana), 400);
   r = await call('POST', 'progress/level', { game: 'ritmo', pts: 60, next: 1, score: 60 }, ana); ok(r);

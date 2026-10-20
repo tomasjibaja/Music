@@ -26,6 +26,7 @@ $('#p1').value='mala';await login({preventDefault(){}});assert.ok($('#er').textC
 $('#p1').value='docente-123';await login({preventDefault(){}});assert.equal(USERS.length,2);
 for(const t of ['res','al','tm','aj']){tab=t;render();assert.ok($('#app').innerHTML.length>200,t)}
 await setTopic('t2',true);assert.equal(SET.topics.t2,true);await allTopics(false);assert.equal(open_('t2'),false);
+await setGame('ritmo',true);assert.equal(gOpen('ritmo'),true);await allGames(false);assert.equal(gOpen('ritmo'),false);
 await saveSet({allowSignup:false});assert.equal(SET.allowSignup,false);
 tab='al';sel='ana';render();assert.ok($('#app').innerHTML.includes('Blanquear'));
 await doBlank('ana');assert.ok(USERS.find(u=>u.k==='ana').blanqueo);

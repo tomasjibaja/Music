@@ -29,7 +29,7 @@ const call = async (m, p, b, t) => { const r = await fetch('/api/index?r=' + p, 
 
 (async () => {
   const T = (await call('POST', 'teacher/login', { password: 'docente-123' })).token;
-  await call('POST', 'teacher/settings', { topics: { t1: true } }, T);
+  await call('POST', 'teacher/settings', { topics: { t1: true }, games: { ritmo: true } }, T);
   const r = await new AF('assert', 'call', 'listeners', 'db', code + `
 ;await boot();
 assert.equal(BOOT,true); assert.equal(ST.topics.t1,true); assert.equal(ME,null);

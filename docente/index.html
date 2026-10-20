@@ -37,11 +37,11 @@ label{font-weight:800;font-size:.9rem}.lnk{background:none;border:0;padding:4px 
 </style></head><body><div id="app"></div><div id="toast" role="status"></div>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const GM={ritmo:['Ritmo','Ritmo'],cambio:['¿Qué cambió?','Sonido'],ances:['Instrumentos ancestrales','Precolombina'],orig:['Línea del tiempo','Origen']};
+const GM={ritmo:['Ritmo','Ritmo'],cambio:['Propiedades del sonido','Sonido'],ances:['Instrumentos ancestrales','Precolombina'],orig:['Línea del tiempo','Origen']};
 const AREAS=['Sonido','Ritmo','Origen','Precolombina'];
 const TP=[['t1','¿Qué es la música?',6],['t2','Escribir el ritmo',6],['t3','Propiedades del sonido',6],['t4','Dinámica y velocidad',6],['t5','Origen de la música',4],['t6','El huayno',5]];
 const CH=['Bip','Teddy','Mimi','Spike','Capitán Rulo','Merlo','Sombra','Lila','Zuki','Rex','Brisa','Sir Forte'];
-const thr=n=>Math.round(1000*(Math.pow(1.47,n)-1)/0.47/10)*10;
+const thr=n=>Math.round(500*(Math.pow(1.47,n)-1)/0.47/10)*10;
 const lvl=p=>{let l=1;while(l<10&&p>=thr(l))l++;return l};
 const total=u=>Object.values(u.points||{}).reduce((a,b)=>a+b,0);
 const area=(u,a)=>Object.entries(GM).filter(([,g])=>g[1]===a).reduce((s,[id])=>s+((u.points||{})[id]||0),0);
@@ -64,7 +64,7 @@ function render(){const a=$('#app');
 if(!ready){a.innerHTML='<p style="text-align:center;margin-top:30vh">Cargando…</p>';return}
 if(!TOK){a.innerHTML=`<form class="card auth" onsubmit="return login(event)"><h1 class="dp">Panel docente</h1><label for="p1">Contraseña</label><input id="p1" type="password" autocomplete="current-password" required><p class="err" id="er"></p><button class="btn">Entrar</button></form>`;return}
 a.innerHTML=`<div class="top"><h1 class="dp">Panel docente</h1><button class="btn sm mt" onclick="reload()">🔄 Actualizar</button><button class="btn sm gh" onclick="out()">Salir</button></div>
-<div class="tabs">${[['res','Resumen'],['al','Alumnos'],['tm','Temas'],['aj','Ajustes']].map(([k,l])=>`<button ${tab===k?'aria-current="page"':''} onclick="tab='${k}';sel=null;render()">${l}</button>`).join('')}</div>${tab==='res'?resumen():tab==='al'?(sel?detalle():alumnos()):tab==='tm'?temas():ajustes()}`}
+<div class="tabs">${[['res','Resumen'],['al','Alumnos'],['tm','Temas y juegos'],['aj','Ajustes']].map(([k,l])=>`<button ${tab===k?'aria-current="page"':''} onclick="tab='${k}';sel=null;render()">${l}</button>`).join('')}</div>${tab==='res'?resumen():tab==='al'?(sel?detalle():alumnos()):tab==='tm'?temas():ajustes()}`}
 async function login(e){e.preventDefault();const er=$('#er');try{const r=await api('teacher/login','POST',{password:$('#p1').value});TOK=r.token;try{sessionStorage.setItem('sonoro_t',TOK)}catch(x){}await refresh();render()}catch(x){er.textContent=x.error}return false}
 function out(){TOK=null;try{sessionStorage.removeItem('sonoro_t')}catch(e){}sel=null;render()}
 
@@ -96,7 +96,11 @@ async function saveSet(p){try{SET=(await api('teacher/settings','POST',p)).setti
 const setTopic=(id,v)=>saveSet({topics:{...SET.topics,[id]:v}});
 const allTopics=v=>{const t={};TP.forEach(([id])=>t[id]=v);return saveSet({topics:t})};
 const sw=(on,js,l)=>`<button class="sw" role="switch" aria-checked="${on}" aria-label="${l}" onclick="${js}"></button>`;
-function temas(){const U=USERS;return `<div class="pl" style="margin-bottom:12px"><button class="btn sm mt" onclick="allTopics(true)">Habilitar todos</button><button class="btn sm gh" onclick="allTopics(false)">Bloquear todos</button></div>${TP.map(([id,n,t])=>{const on=open_(id),d=U.filter(u=>((u.read||{})[id]||{}).done).length,s=U.filter(u=>(u.read||{})[id]&&!u.read[id].done).length;return `<div class="row">${sw(on,`setTopic('${id}',${!on})`,n)}<div class="n"><b>${esc(n)}</b><small>${t} diapositivas · ${d} la terminaron · ${s} en curso</small></div><span class="pill ${on?'g':'r'}">${on?'Habilitado':'Bloqueado'}</span></div>`}).join('')}<p class="mut">Los temas empiezan bloqueados. Los alumnos los ven con candado hasta que los habilites.</p>`}
+const GREAL=['ritmo','cambio'],gOpen=id=>SET.games&&SET.games[id]===true;
+const setGame=(id,v)=>saveSet({games:{...SET.games,[id]:v}});
+const allGames=v=>{const t={};GREAL.forEach(id=>t[id]=v);return saveSet({games:t})};
+function temas(){const U=USERS;return `<h3 style="margin:0 0 8px">Temas de teoría</h3><div class="pl" style="margin-bottom:12px"><button class="btn sm mt" onclick="allTopics(true)">Habilitar todos</button><button class="btn sm gh" onclick="allTopics(false)">Bloquear todos</button></div>${TP.map(([id,n,t])=>{const on=open_(id),d=U.filter(u=>((u.read||{})[id]||{}).done).length,s=U.filter(u=>(u.read||{})[id]&&!u.read[id].done).length;return `<div class="row">${sw(on,`setTopic('${id}',${!on})`,n)}<div class="n"><b>${esc(n)}</b><small>${t} diapositivas · ${d} la terminaron · ${s} en curso</small></div><span class="pill ${on?'g':'r'}">${on?'Habilitado':'Bloqueado'}</span></div>`}).join('')}
+<h3 style="margin:22px 0 8px">Juegos</h3><div class="pl" style="margin-bottom:12px"><button class="btn sm mt" onclick="allGames(true)">Habilitar todos</button><button class="btn sm gh" onclick="allGames(false)">Bloquear todos</button></div>${GREAL.map(id=>{const on=gOpen(id),j=U.filter(u=>u.stats&&u.stats[id]&&u.stats[id].plays).length;return `<div class="row">${sw(on,`setGame('${id}',${!on})`,GM[id][0])}<div class="n"><b>${esc(GM[id][0])}</b><small>Área ${esc(GM[id][1])} · ${j} alumnos lo terminaron</small></div><span class="pill ${on?'g':'r'}">${on?'Habilitado':'Bloqueado'}</span></div>`}).join('')}<p class="mut">Los temas y los juegos empiezan bloqueados. Los alumnos los ven con candado hasta que los habilites.</p>`}
 function ajustes(){const on=SET.allowSignup!==false;return `<div class="row">${sw(on,`saveSet({allowSignup:${!on}})`,'Permitir usuarios nuevos')}<div class="n"><b>Permitir usuarios nuevos</b><small>Si lo apagás, nadie puede crear cuenta.</small></div><span class="pill ${on?'g':'r'}">${on?'Sí':'No'}</span></div>
 <div class="card"><h3>Mi contraseña</h3><p class="mut">Se cambia en Vercel: Settings → Environment Variables → <b>TEACHER_PASSWORD</b>, y después Redeploy.</p></div>`}
 init();

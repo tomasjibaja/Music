@@ -11,7 +11,7 @@ const int = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFi
 
 async function getSettings(db) {
   const s = (await db.collection('settings').findOne({ _id: 'main' })) || {};
-  return { allowSignup: s.allowSignup !== false, topics: s.topics || {} };
+  return { allowSignup: s.allowSignup !== false, topics: s.topics || {}, games: s.games || {} };
 }
 async function limit(db, key, max, seconds) {
   const a = await db.collection('attempts').findOne({ _id: key });
@@ -94,6 +94,7 @@ const H = {
   'POST progress/level': async (ctx) => {
     const u = await student(ctx), { db, b } = ctx, g = String(b.game || ''), G = GAMES[g];
     if (!G) throw fail(400, 'Juego desconocido.');
+    if ((await getSettings(db)).games[g] !== true) throw fail(403, 'Este juego todavía no está habilitado.');
     const pts = int(b.pts, 0, G.cap), score = int(b.score, 0, 5000);
     const next = b.next === null || b.next === undefined ? null : int(b.next, 1, G.levels - 1);
     if (pts === null || score === null || (b.next != null && next === null)) throw fail(400, 'Datos inválidos.');
@@ -112,6 +113,7 @@ const H = {
   'POST progress/end': async (ctx) => {
     const u = await student(ctx), { db, b } = ctx, g = String(b.game || '');
     if (!GAMES[g]) throw fail(400, 'Juego desconocido.');
+    if ((await getSettings(db)).games[g] !== true) throw fail(403, 'Este juego todavía no está habilitado.');
     const f = u.fin && u.fin[g];
     if (!f || Date.now() - f.ts > 180000) throw fail(400, 'No hay una partida terminada para sumar el bonus.');
     const st = (u.stats && u.stats[g]) || { plays: 0, best: 0 }, total = f.run + FINISH_BONUS;
@@ -186,6 +188,7 @@ const H = {
     const b = ctx.b, set = {};
     if (typeof b.allowSignup === 'boolean') set.allowSignup = b.allowSignup;
     if (b.topics && typeof b.topics === 'object') { set.topics = {}; for (const t of Object.keys(TOPICS)) if (typeof b.topics[t] === 'boolean') set.topics[t] = b.topics[t]; }
+    if (b.games && typeof b.games === 'object') { set.games = {}; for (const g of Object.keys(GAMES)) if (typeof b.games[g] === 'boolean') set.games[g] = b.games[g]; }
     if (Object.keys(set).length) await ctx.db.collection('settings').updateOne({ _id: 'main' }, { $set: set }, { upsert: true });
     return { settings: await getSettings(ctx.db) };
   },
