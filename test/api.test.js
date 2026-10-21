@@ -72,6 +72,21 @@ const old = (u, g) => { users.find((x) => x.username === u).lv = { [g]: 1 }; }; 
   r = await call('GET', 'ranking', null, ana); ok(r);
   assert.equal(r.out.total, 2); assert.equal(r.out.me, 1); assert.equal(r.out.list[0].p, 350);
 
+  // arena (una sola batalla, sin niveles ni bonus)
+  ok(await call('POST', 'progress/battle', { game: 'arena', pts: 50 }, ana), 403);
+  ok(await call('POST', 'teacher/settings', { games: { ritmo: true, cambio: true, arena: true } }, T));
+  ok(await call('POST', 'progress/level', { game: 'arena', pts: 10, next: null, score: 1 }, ana), 400);
+  ok(await call('POST', 'progress/battle', { game: 'ritmo', pts: 10 }, ana), 400);
+  ok(await call('POST', 'progress/battle', { game: 'arena', pts: 151 }, ana), 400);
+  ok(await call('POST', 'progress/battle', { game: 'arena', pts: 0 }, ana), 400);
+  r = await call('POST', 'progress/battle', { game: 'arena', pts: 90 }, ana); ok(r);
+  assert.equal(r.out.user.points.arena, 90); assert.deepEqual(r.out.user.stats.arena, { plays: 1, best: 90 });
+  ok(await call('POST', 'progress/battle', { game: 'arena', pts: 80 }, ana), 429);
+  old('ana', 'arena'); r = await call('POST', 'progress/battle', { game: 'arena', pts: 120 }, ana); ok(r);
+  assert.equal(r.out.user.points.arena, 210); assert.deepEqual(r.out.user.stats.arena, { plays: 2, best: 120 });
+  r = await call('POST', 'progress/save', { game: 'arena', state: 'x'.repeat(400) }, ana); ok(r); assert.equal(r.out.user.gstate.arena.length, 300);
+  ok(await call('POST', 'progress/save', { game: 'ritmo', state: 'a' }, ana), 400);
+
   // blanqueo (24 h)
   r = await call('POST', 'teacher/blank', { username: 'ana' }, T); ok(r);
   assert.match(r.out.link, /^https:\/\/sonoro\.test\/\?reset=[\w-]{20,}&u=ana$/);

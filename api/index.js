@@ -1,12 +1,12 @@
 const { getDb } = require('./_lib/db');
 const A = require('./_lib/auth');
-const { GAMES, TOPICS, AVATARS, FINISH_BONUS, MIN_LEVEL_SECONDS, RESET_HOURS } = require('./_lib/data');
+const { GAMES, TOPICS, AVATARS, FINISH_BONUS, MIN_LEVEL_SECONDS, MIN_BATTLE_SECONDS, RESET_HOURS } = require('./_lib/data');
 
 const fail = (http, message, extra) => Object.assign(new Error(message), { http, extra });
 const NAME_RE = /^[\p{L}\p{N}_.\- ]{3,16}$/u;
 const DAY = 86400;
 
-const pub = (u) => ({ username: u.username, name: u.name, avatar: u.avatar, points: u.points || {}, read: u.read || {}, stats: u.stats || {}, prog: u.prog || {} });
+const pub = (u) => ({ username: u.username, name: u.name, avatar: u.avatar, points: u.points || {}, read: u.read || {}, stats: u.stats || {}, prog: u.prog || {}, gstate: u.gstate || {} });
 const int = (v, lo, hi) => { const n = Math.round(Number(v)); return Number.isFinite(n) && n >= lo && n <= hi ? n : null; };
 
 async function getSettings(db) {
@@ -93,7 +93,7 @@ const H = {
 
   'POST progress/level': async (ctx) => {
     const u = await student(ctx), { db, b } = ctx, g = String(b.game || ''), G = GAMES[g];
-    if (!G) throw fail(400, 'Juego desconocido.');
+    if (!G || G.battle) throw fail(400, 'Juego desconocido.');
     if ((await getSettings(db)).games[g] !== true) throw fail(403, 'Este juego todavía no está habilitado.');
     const pts = int(b.pts, 0, G.cap), score = int(b.score, 0, 5000);
     const next = b.next === null || b.next === undefined ? null : int(b.next, 1, G.levels - 1);
@@ -112,7 +112,7 @@ const H = {
 
   'POST progress/end': async (ctx) => {
     const u = await student(ctx), { db, b } = ctx, g = String(b.game || '');
-    if (!GAMES[g]) throw fail(400, 'Juego desconocido.');
+    if (!GAMES[g] || GAMES[g].battle) throw fail(400, 'Juego desconocido.');
     if ((await getSettings(db)).games[g] !== true) throw fail(403, 'Este juego todavía no está habilitado.');
     const f = u.fin && u.fin[g];
     if (!f || Date.now() - f.ts > 180000) throw fail(400, 'No hay una partida terminada para sumar el bonus.');
@@ -123,6 +123,28 @@ const H = {
       $unset: { ['fin.' + g]: '', ['prog.' + g]: '' },
     });
     return { user: pub(await db.collection('users').findOne({ username: u.username })) };
+  },
+
+  // Juegos de una sola batalla (sin niveles ni bonus): solo suman si se gana
+  'POST progress/battle': async (ctx) => {
+    const u = await student(ctx), { db, b } = ctx, g = String(b.game || ''), G = GAMES[g];
+    if (!G || !G.battle) throw fail(400, 'Juego desconocido.');
+    if ((await getSettings(db)).games[g] !== true) throw fail(403, 'Este juego todavía no está habilitado.');
+    const pts = int(b.pts, 1, G.cap);
+    if (pts === null) throw fail(400, 'Datos inválidos.');
+    const now = Date.now(), last = u.lv && u.lv[g];
+    if (last && now - last < MIN_BATTLE_SECONDS * 1000) throw fail(429, 'Demasiado rápido.');
+    const st = (u.stats && u.stats[g]) || { plays: 0, best: 0 };
+    await db.collection('users').updateOne({ username: u.username }, { $inc: { ['points.' + g]: pts }, $set: { ['lv.' + g]: now, ['stats.' + g]: { plays: (st.plays || 0) + 1, best: Math.max(st.best || 0, pts) } } });
+    return { user: pub(await db.collection('users').findOne({ username: u.username })) };
+  },
+
+  'POST progress/save': async (ctx) => {
+    const u = await student(ctx), g = String(ctx.b.game || ''), G = GAMES[g];
+    if (!G || !G.battle) throw fail(400, 'Juego desconocido.');
+    const state = String(ctx.b.state == null ? '' : ctx.b.state).slice(0, 300);
+    await ctx.db.collection('users').updateOne({ username: u.username }, { $set: { ['gstate.' + g]: state } });
+    return { user: pub(await ctx.db.collection('users').findOne({ username: u.username })) };
   },
 
   'POST read': async (ctx) => {

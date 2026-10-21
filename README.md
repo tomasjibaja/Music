@@ -63,4 +63,5 @@ npx vercel dev           # con un archivo .env copiado de .env.example
 ## Actualizar un juego
 
 Los juegos están incrustados en `index.html`. Para cambiar uno, se reemplaza su versión (ver `games-src/`) y se vuelve a incrustar.
-Cada juego avisa a la plataforma con tres mensajes: puntos por nivel, fin de partida y partida a retomar.
+Los juegos por niveles avisan con `level` y `end`. La Arena Sonora (una sola batalla) avisa con `battle` (puntos al ganar, 1 a 150) y `save` (repertorio de ataques).
+La plataforma le pasa a la Arena `window.SONORO = {charLevel, state, topics, meFig, figs}`.

@@ -29,7 +29,7 @@ const call = async (m, p, b, t) => { const r = await fetch('/api/index?r=' + p, 
 
 (async () => {
   const T = (await call('POST', 'teacher/login', { password: 'docente-123' })).token;
-  await call('POST', 'teacher/settings', { topics: { t1: true }, games: { ritmo: true } }, T);
+  await call('POST', 'teacher/settings', { topics: { t1: true }, games: { ritmo: true, arena: true } }, T);
   const r = await new AF('assert', 'call', 'listeners', 'db', code + `
 ;await boot();
 assert.equal(BOOT,true); assert.equal(ST.topics.t1,true); assert.equal(ME,null);
@@ -45,9 +45,15 @@ const send=async d=>{listeners.message({data:d,source:$('#gf').contentWindow});a
 await send({sonoro:'level',pts:60,next:1,score:60});assert.equal(ME.points.ritmo,60);assert.equal(ME.prog.ritmo.level,1);
 old();await send({sonoro:'level',pts:70,next:null,score:130});old();
 await send({sonoro:'end',bonus:50,score:180});assert.equal(ME.points.ritmo,180);assert.equal(ME.stats.ritmo.plays,1);
+// arena: lleva nivel, temas y dibujos; suma al ganar y guarda el repertorio
+launchG('arena',null);const sd=$('#gf').srcdoc;assert.ok(sd.includes('window.SONORO')&&sd.includes('"charLevel":1')&&sd.includes('"topics":["t1"]')&&sd.includes('"figs":["'));
+const i0=sd.indexOf('window.SONORO='),inj=sd.slice(i0,sd.indexOf('</script>',i0));assert.ok(inj.length>5000&&!inj.includes('<'),'los datos inyectados no deben contener <');
+await send({sonoro:'battle',pts:100});assert.equal(ME.points.arena,100);assert.equal(ME.stats.arena.plays,1);
+await send({sonoro:'save',state:'{"t":[1,2]}'});assert.equal(ME.gstate.arena,'{"t":[1,2]}');
+launchG('arena',null);assert.ok($('#gf').srcdoc.includes('{\\"t\\":[1,2]}')||$('#gf').srcdoc.includes('"state"'));
 // salir y volver a entrar
 logout();assert.equal(ME,null);mode='login';$('#un').value='LOLA';$('#pw').value='1234';await go({preventDefault(){}});
-assert.equal(ME.name,'Lola');assert.equal(total(ME),180);
+assert.equal(ME.name,'Lola');assert.equal(total(ME),280);
 // blanqueo por enlace
 return TOKEN;`)(assert, call, listeners, db);
   const bl = await call('POST', 'teacher/blank', { username: 'lola' }, T);

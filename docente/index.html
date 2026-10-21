@@ -37,7 +37,7 @@ label{font-weight:800;font-size:.9rem}.lnk{background:none;border:0;padding:4px 
 </style></head><body><div id="app"></div><div id="toast" role="status"></div>
 <script>
 const $=s=>document.querySelector(s),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const GM={ritmo:['Ritmo','Ritmo'],cambio:['Propiedades del sonido','Sonido'],ances:['Instrumentos ancestrales','Precolombina'],orig:['Línea del tiempo','Origen']};
+const GM={ritmo:['Ritmo','Ritmo'],cambio:['Propiedades del sonido','Sonido'],arena:['Arena Sonora','Sonido'],ances:['Instrumentos ancestrales','Precolombina'],orig:['Línea del tiempo','Origen']};
 const AREAS=['Sonido','Ritmo','Origen','Precolombina'];
 const TP=[['t1','¿Qué es la música?',6],['t2','Escribir el ritmo',6],['t3','Propiedades del sonido',6],['t4','Dinámica y velocidad',6],['t5','Origen de la música',4],['t6','El huayno',5]];
 const CH=['Bip','Teddy','Mimi','Spike','Capitán Rulo','Merlo','Sombra','Lila','Zuki','Rex','Brisa','Sir Forte'];
@@ -96,7 +96,7 @@ async function saveSet(p){try{SET=(await api('teacher/settings','POST',p)).setti
 const setTopic=(id,v)=>saveSet({topics:{...SET.topics,[id]:v}});
 const allTopics=v=>{const t={};TP.forEach(([id])=>t[id]=v);return saveSet({topics:t})};
 const sw=(on,js,l)=>`<button class="sw" role="switch" aria-checked="${on}" aria-label="${l}" onclick="${js}"></button>`;
-const GREAL=['ritmo','cambio'],gOpen=id=>SET.games&&SET.games[id]===true;
+const GREAL=['ritmo','cambio','arena'],gOpen=id=>SET.games&&SET.games[id]===true;
 const setGame=(id,v)=>saveSet({games:{...SET.games,[id]:v}});
 const allGames=v=>{const t={};GREAL.forEach(id=>t[id]=v);return saveSet({games:t})};
 function temas(){const U=USERS;return `<h3 style="margin:0 0 8px">Temas de teoría</h3><div class="pl" style="margin-bottom:12px"><button class="btn sm mt" onclick="allTopics(true)">Habilitar todos</button><button class="btn sm gh" onclick="allTopics(false)">Bloquear todos</button></div>${TP.map(([id,n,t])=>{const on=open_(id),d=U.filter(u=>((u.read||{})[id]||{}).done).length,s=U.filter(u=>(u.read||{})[id]&&!u.read[id].done).length;return `<div class="row">${sw(on,`setTopic('${id}',${!on})`,n)}<div class="n"><b>${esc(n)}</b><small>${t} diapositivas · ${d} la terminaron · ${s} en curso</small></div><span class="pill ${on?'g':'r'}">${on?'Habilitado':'Bloqueado'}</span></div>`}).join('')}
