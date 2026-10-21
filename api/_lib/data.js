@@ -2,6 +2,7 @@
 module.exports = {
   GAMES: { ritmo: { cap: 200, levels: 4 }, cambio: { cap: 300, levels: 4 }, arena: { cap: 150, levels: 1, battle: true } }, // cap = máximo de puntos por nivel
   TOPICS: { t1: 6, t2: 6, t3: 6, t4: 6, t5: 4, t6: 5 },                          // temas y cantidad de diapositivas
+  PLANNED: ['ances', 'orig'],            // juegos futuros: solo se pueden habilitar para mostrar "Próximamente"
   AVATARS: 12,
   FINISH_BONUS: 50,
   MIN_LEVEL_SECONDS: 12,

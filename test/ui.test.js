@@ -35,6 +35,7 @@ const call = async (m, p, b, t) => { const r = await fetch('/api/index?r=' + p, 
 assert.equal(BOOT,true); assert.equal(ST.topics.t1,true); assert.equal(ME,null);
 draft={n:'Lola',p:'1234'};cs=4;await createAcc();
 assert.equal(ME.name,'Lola');assert.equal(ME.avatar,4);assert.ok(TOKEN);
+assert.ok(!games(ME).includes('Instrumentos ancestrales')&&!games(ME).includes('Línea del tiempo'));ST.games={...ST.games,ances:true};assert.ok(games(ME).includes('Instrumentos ancestrales')&&games(ME).includes('Próximamente'));ST.games.ances=false;
 nav('rank');await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));assert.equal(RK.me,1);
 // teoría completa
 openT('t1');for(let k=0;k<5;k++)step(1);await new Promise(r=>setImmediate(r));await new Promise(r=>setImmediate(r));

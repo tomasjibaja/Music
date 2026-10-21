@@ -111,6 +111,11 @@ const old = (u, g) => { users.find((x) => x.username === u).lv = { [g]: 1 }; }; 
   r = await call('POST', 'teacher/delete', { username: 'beto' }, T); assert.equal(r.out.deleted, 1);
   ok(await call('POST', 'teacher/settings', { allowSignup: false }, T));
   ok(await call('POST', 'register', { username: 'Carla', password: '1234', avatar: 1 }), 403);
+  r = await call('POST', 'teacher/settings', { games: { ances: true, orig: false } }, T); ok(r); assert.deepEqual(r.out.settings.games, { ances: true, orig: false });
+  assert.equal((await call('GET', 'settings')).out.games.ances, true);
+  r = await call('POST', 'register', { username: 'Dani', password: '1234', avatar: 2 }); ok(r, 403); // el registro quedó apagado
+  await call('POST', 'teacher/settings', { allowSignup: true }, T); r = await call('POST', 'register', { username: 'Dani', password: '1234', avatar: 2 }); ok(r);
+  ok(await call('POST', 'progress/level', { game: 'ances', pts: 5, next: 1, score: 5 }, r.out.token), 400);
   ok(await call('GET', 'nada'), 404);
   r = await call('GET', 'health'); ok(r); assert.equal(r.out.db, 'ok'); assert.equal(r.out.env.JWT_SECRET, true); assert.ok(!JSON.stringify(r.out).includes('prueba-prueba'));
   delete process.env.JWT_SECRET; r = await call('POST', 'register', { username: 'Zeta', password: '1234', avatar: 1 }); ok(r, 500); assert.match(r.out.error, /JWT_SECRET/); assert.equal(users.some((x) => x.username === 'zeta'), false);

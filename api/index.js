@@ -1,6 +1,6 @@
 const { getDb } = require('./_lib/db');
 const A = require('./_lib/auth');
-const { GAMES, TOPICS, AVATARS, FINISH_BONUS, MIN_LEVEL_SECONDS, MIN_BATTLE_SECONDS, RESET_HOURS } = require('./_lib/data');
+const { GAMES, PLANNED, TOPICS, AVATARS, FINISH_BONUS, MIN_LEVEL_SECONDS, MIN_BATTLE_SECONDS, RESET_HOURS } = require('./_lib/data');
 
 const fail = (http, message, extra) => Object.assign(new Error(message), { http, extra });
 const NAME_RE = /^[\p{L}\p{N}_.\- ]{3,16}$/u;
@@ -210,7 +210,7 @@ const H = {
     const b = ctx.b, set = {};
     if (typeof b.allowSignup === 'boolean') set.allowSignup = b.allowSignup;
     if (b.topics && typeof b.topics === 'object') { set.topics = {}; for (const t of Object.keys(TOPICS)) if (typeof b.topics[t] === 'boolean') set.topics[t] = b.topics[t]; }
-    if (b.games && typeof b.games === 'object') { set.games = {}; for (const g of Object.keys(GAMES)) if (typeof b.games[g] === 'boolean') set.games[g] = b.games[g]; }
+    if (b.games && typeof b.games === 'object') { set.games = {}; for (const g of [...Object.keys(GAMES), ...PLANNED]) if (typeof b.games[g] === 'boolean') set.games[g] = b.games[g]; }
     if (Object.keys(set).length) await ctx.db.collection('settings').updateOne({ _id: 'main' }, { $set: set }, { upsert: true });
     return { settings: await getSettings(ctx.db) };
   },
