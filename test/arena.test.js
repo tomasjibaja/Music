@@ -7,7 +7,7 @@ function run(S) {
   const mk = () => ({ _h: '', set innerHTML(v) { this._h = v; }, get innerHTML() { return this._h; }, style: { setProperty() {}, removeProperty() {} }, className: '', textContent: '', value: '1', dataset: {}, classList: { toggle() {} }, querySelectorAll: () => [], querySelector: () => mk(), getContext: () => new Proxy({}, { get: (t, k) => (k in t ? t[k] : () => {}), set: (t, k, v) => { t[k] = v; return true; } }), appendChild() {}, getBoundingClientRect: () => ({ left: 0, top: 0, width: 10, height: 10 }), animate: () => ({ finished: Promise.resolve(), cancel() {} }) });
   const $ = (s) => els[s] || (els[s] = mk());
   const posted = [];
-  const g = { document: { querySelector: $, createElement: mk }, window: { SONORO: S, devicePixelRatio: 1 }, parent: { postMessage: (o) => posted.push(o) }, raf: (f) => setTimeout(() => f(performance.now()), 16) };
+  const g = { document: { querySelector: $, createElement: mk }, window: { SONORO: S, devicePixelRatio: 1, addEventListener() {} }, parent: { postMessage: (o) => posted.push(o) }, raf: (f) => setTimeout(() => f(performance.now()), 16) };
   const BG = new Function('document', 'window', 'parent', 'setInterval', 'clearInterval', 'requestAnimationFrame', code + ';return BG')(g.document, g.window, g.parent, () => 0, () => {}, g.raf);
   return { els, posted, BG };
 }
